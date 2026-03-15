@@ -25,21 +25,41 @@ G0 F9000 Z3.00  ; Lift nozzle 3 mm
 ### PrusaSlicer (this config)
 
 ```gcode
+;PRINTER_MODEL: 3DFF-222
+;CARTRIDGE_COUNT_TOTAL: 1
+;CARTRIDGE_USED_STATE: T
+;USEDNOZZLE: 1
 ;Filament_Material : {filament_type[0]}     ; required by 3DWOX cartridge validator
 ;MATERIAL: {filament_type[0]}              ; required by 3DWOX cartridge validator
 ;MATERIAL_CARTRIDGE_0: {filament_type[0]}  ; required by 3DWOX cartridge validator
+;TOTAL_RAFTLAYER: 0                        ; firmware metadata
+T0                                         ; select extruder
 G90                                        ; absolute coordinates
+M300 S440 P300                             ; beep 1 - sequence started
+M117 Starting...
 M140 S[first_layer_bed_temperature]        ; set bed temp (no wait)
 M190 S[first_layer_bed_temperature]        ; wait for bed temp
 M104 S[first_layer_temperature]            ; set nozzle temp (no wait)
 M109 S[first_layer_temperature]            ; wait for nozzle temp
+M300 S440 P300                             ; beep 2 - temps reached
+M117 Homing...
 G28                                        ; home all axes
-G1 Z2 F5000                                ; lift bed to safe height
+M300 S440 P300                             ; beep 3 - homing complete
+G1 Z0.28 F5000                             ; move to prime-line height
+G90                                        ; absolute coordinates
 M82                                        ; absolute extruder mode
-M117                                       ; clear LCD message
+G92 E0
+G1 Y3 F2400
+G1 X{(print_bed_max[0]-print_bed_min[0]) / 2} E40 F500
+G92 E0
+G1 E-0.2 F3000
+G1 X{((print_bed_max[0]-print_bed_min[0]) / 2) + 1} F4000
+G92 E0
+M117 Printing...
+M300 S440 P300                             ; beep 4 - ready to print
 ```
 
-> No purge line — the configured skirt primes the nozzle around the model before printing begins.
+> This configuration replaces the proprietary `G200` wipe with a standard front-edge prime line, leaving the extruder reset and ready for the sliced toolpath.
 
 ---
 
@@ -49,8 +69,8 @@ M117                                       ; clear LCD message
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `M140 S60` then `M104 T0 S200` (no-wait) | — | OEM starts heating immediately, **without waiting**, so the printer can do other things (fan off, nozzle cleaning) while temperatures rise — saves time |
-| `M190 S60` + `M109 T0 S200` (wait) later | `M190 S[first_layer_bed_temperature]` + `M109 S[first_layer_temperature]` (wait) | Both sequences eventually wait for full temperature before printing. PrusaSlicer combines the start and wait into one step using slicer variables instead of hardcoded values |
+| `M140 S60` then `M104 T0 S200` (no-wait) | `M140 S[first_layer_bed_temperature]` then later `M104 S[first_layer_temperature]` | Both sequences begin with non-blocking heater commands, but our version uses slicer variables instead of hardcoded PLA temperatures. |
+| `M190 S60` + `M109 T0 S200` (wait) later | `M190 S[first_layer_bed_temperature]` + `M109 S[first_layer_temperature]` (wait) | Both sequences still wait for full bed and nozzle temperature before homing or printing. |
 
 > **PrusaSlicer variables:** `[first_layer_bed_temperature]` and `[first_layer_temperature]` are automatically substituted with the values from your filament profile at slice time. This means the start gcode works correctly for any filament profile without editing — e.g. switching from PLA+ (220°C) to PETG (230°C) requires no gcode change.
 
@@ -60,7 +80,7 @@ M117                                       ; clear LCD message
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `G28` occurs **after** heating | `G28` occurs **before** heating | The OEM homes after the nozzle is hot. This risks the hot nozzle dragging across the bed during homing if there is any residual filament. Our sequence homes first while cold, which is safer. Print quality is identical either way. |
+| `G28` occurs **after** heating | `G28` occurs **after** heating | The finalized startup now matches the OEM ordering more closely: full bed/nozzle heat first, then homing, then priming. |
 
 ---
 
@@ -76,7 +96,7 @@ M117                                       ; clear LCD message
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `G200` — triggers a built-in hardware cleaning/wiping routine on the 3DWOX 1 | `G1 E10 F200` — manually extrudes 10 mm of filament to purge the nozzle | `G200` is a **proprietary Sindoh command** — it is not standard RepRap G-code and cannot be sent from PrusaSlicer. The hardware routine it triggers moves the nozzle to a dedicated wipe pad built into the printer. There is no way to replicate this from PrusaSlicer. The manual prime (`G1 E10 F200`) is the best available substitute and is sufficient for most prints. |
+| `G200` — triggers a built-in hardware cleaning/wiping routine on the 3DWOX 1 | Front-edge purge line (`G1 Y3`, `G1 X... E40`, slight retract) | `G200` is a **proprietary Sindoh command** — it is not standard RepRap G-code and cannot be sent from PrusaSlicer. The hardware routine it triggers moves the nozzle to a dedicated wipe pad built into the printer. There is no way to replicate this from PrusaSlicer. The front-edge prime line is the best standard alternative and leaves the extruder in a clean known state with `G92 E0`. |
 
 ---
 
@@ -84,7 +104,7 @@ M117                                       ; clear LCD message
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `G21` (metric) and `G90` (absolute) explicitly set | Not included | All modern firmware (Marlin, Repetier, RepRap) defaults to metric and absolute mode on power-on. These commands are redundant on the 3DWOX 1. PrusaSlicer omits them for brevity; adding them would do no harm. |
+| `G21` (metric) and `G90` (absolute) explicitly set | `G90` included, `G21` omitted | `G90` is kept explicitly in this config, while `G21` is still omitted because modern firmware already defaults to metric units. |
 
 ---
 
@@ -92,7 +112,7 @@ M117                                       ; clear LCD message
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `G92 E-20` — sets extruder position to **-20** | `G92 E0` — sets extruder position to **0** | The OEM uses `-20` as a pre-load value that works in conjunction with the `G200` nozzle cleaning routine — the cleaning routine consumes that 20 mm of "pre-loaded" filament as part of its wipe sequence. Since we cannot use `G200`, we reset to `0` and then prime manually with `G1 E10 F200` instead. |
+| `G92 E-20` — sets extruder position to **-20** | Multiple `G92 E0` resets around the prime line | The OEM uses `-20` as a pre-load value that works in conjunction with the `G200` nozzle cleaning routine. Since we cannot use `G200`, we reset to `0`, extrude the purge line explicitly, perform a tiny retract, and reset to `0` again so the print starts from a clean extruder state. |
 
 ---
 
@@ -100,7 +120,7 @@ M117                                       ; clear LCD message
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `G0 F9000 Z3.00` — lifts 3 mm at 9000 mm/min (150 mm/s) | `G1 Z5 F5000` — lifts 5 mm at 5000 mm/min (83 mm/s) | We lift slightly higher (5 mm vs 3 mm) and slightly slower for safety. The OEM lifts after homing while already hot; we lift before heating. Both approaches adequately clear the bed. |
+| `G0 F9000 Z3.00` — lifts 3 mm at 9000 mm/min (150 mm/s) | `G1 Z0.28 F5000` — moves directly to the first-layer purge height | Instead of lifting away and relying on a skirt, this sequence drops immediately to the intended first-layer height so the prime line is laid down under real printing conditions. |
 
 ---
 
@@ -144,11 +164,11 @@ M84 ; disable motors
 
 | Decision | What we do | Why |
 |----------|-----------|-----|
-| Home before heating | Yes | Safer — cold nozzle cannot drag filament across bed |
+| Home before heating | No | Final validated sequence heats first, then homes, then primes |
 | Hardcoded temperatures | No — use slicer variables | Profile-independent — works for any filament without editing gcode |
-| Replicate `G200` | No — impossible | Proprietary command; use `G1 E10 F200` prime instead |
+| Replicate `G200` | No — impossible | Proprietary command; use a front-edge prime line instead |
 | Explicit heater shutdown | Yes | More reliable than relying on `M2` to handle it |
-| Park head at end | Yes (`X0 Y200`) | Prevents heat damage to top surface; improves print access |
+| Park head at end | Yes (`X5`, `Y95% of bed`) | Prevents heat damage to top surface and improves print access |
 
 ---
 

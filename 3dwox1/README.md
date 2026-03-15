@@ -165,13 +165,21 @@ M300 S440 P300 ; beep 2 - temps reached
 M117 Homing...
 G28 ; home all axes
 M300 S440 P300 ; beep 3 - homing complete
-G1 Z2 F5000 ; lift bed to safe height
+G1 Z0.28 F5000 ; move to prime-line height
+G90 ; absolute coordinates
 M82 ; absolute extruder mode
+G92 E0
+G1 Y3 F2400
+G1 X{(print_bed_max[0]-print_bed_min[0]) / 2} E40 F500
+G92 E0
+G1 E-0.2 F3000
+G1 X{((print_bed_max[0]-print_bed_min[0]) / 2) + 1} F4000
+G92 E0 ; leave extruder in a clean state
 M117 Printing...
 M300 S440 P300 ; beep 4 - ready to print
 ```
 
-> The skirt (configured in Print Settings) primes the nozzle around the model — a separate purge line in the start gcode is not needed.
+> This startup now uses a short front-edge prime line after homing and heating, so the nozzle is charged before the print begins.
 
 **Line-by-line explanation:**
 
@@ -179,17 +187,23 @@ M300 S440 P300 ; beep 4 - ready to print
 |------|---------|---------|
 | 1–4 | `;PRINTER_MODEL` / `;CARTRIDGE_COUNT_TOTAL` / `;CARTRIDGE_USED_STATE` / `;USEDNOZZLE` | OEM header fields required by the 3DWOX firmware to validate the gcode before execution. Without these the printer may cancel the print immediately. |
 | 5–7 | `;Filament_Material` / `;MATERIAL_CARTRIDGE_0` / `;MATERIAL` | Cartridge material validation — uses `{filament_type[0]}` PrusaSlicer variable (outputs `PLA` for PLA/PLA+). Without these the printer errors with a cartridge mismatch. |
-| 8 | `;TOTAL_RAFTLAYER: [0]` | Tells the firmware no raft layers are used. |
+| 8 | `;TOTAL_RAFTLAYER: 0` | Tells the firmware no raft layers are used. |
 | 9 | `T0` | Selects extruder 0 (required by OEM sequence). |
 | 10 | `G90` | Ensures absolute coordinate mode. |
-| 11, 17, 20, 23 | `M300 S440 P300` | Audible beeps at key points — useful for diagnosing where in the sequence a print cancels. Beep 1 = gcode started, beep 2 = temps reached, beep 3 = homing done, beep 4 = ready to print. |
-| 12 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats. |
-| 13 | `M190 S[...]` | Waits for bed to reach target temperature. |
-| 14 | `M104 S[...]` | Starts nozzle heating without waiting. |
-| 15 | `M109 S[...]` | Waits for nozzle to reach target temperature. |
+| 11, 17, 20, 32 | `M300 S440 P300` | Audible beeps at key points — useful for diagnosing where in the sequence a print cancels. Beep 1 = gcode started, beep 2 = temps reached, beep 3 = homing done, beep 4 = ready to print. |
+| 12, 18, 31 | `M117 ...` | Updates the printer LCD so you can see whether the job is heating, homing, or ready to print. |
+| 13 | `M140 S[...]` | Starts bed heating without waiting. |
+| 14 | `M190 S[...]` | Waits for bed to reach target temperature. |
+| 15 | `M104 S[...]` | Starts nozzle heating without waiting. |
+| 16 | `M109 S[...]` | Waits for nozzle to reach target temperature. |
 | 19 | `G28` | Homes all axes (X, Y, Z) to endstops. |
-| 21 | `G1 Z2 F5000` | Lifts bed to a safe 2 mm clearance after homing. |
-| 22 | `M82` | Ensures absolute extruder mode — required as PrusaSlicer generates absolute E gcode. |
+| 21 | `G1 Z0.28 F5000` | Moves to the prime-line height so the purge happens at first-layer Z. |
+| 22, 23 | `G90` / `M82` | Reasserts absolute positioning for XY and the extruder before the prime sequence. |
+| 24, 27, 30 | `G92 E0` | Resets the extruder position before, during, and after priming so print E values start cleanly from zero. |
+| 25 | `G1 Y3 F2400` | Moves to the front edge of the bed for the purge path. |
+| 26 | `G1 X{...} E40 F500` | Draws the prime line across half the bed while extruding 40 mm of filament. |
+| 28 | `G1 E-0.2 F3000` | Slightly retracts to reduce ooze before the first travel move. |
+| 29 | `G1 X{...+1} F4000` | Nudges the nozzle clear of the purge line before the sliced toolpath begins. |
 
 **OEM start sequence (for reference — see [`gcode-sequences.md`](gcode-sequences.md) for full comparison):**
 
@@ -207,7 +221,7 @@ G28             ; Home (AFTER heating)
 G0 F9000 Z3.00  ; Lift
 ```
 
-> **Note:** `G200` is a **proprietary Sindoh command** that triggers a built-in nozzle cleaning/wiping routine. PrusaSlicer cannot replicate it. The `G1 E10 F200` prime line is the best alternative. The OEM also homes *after* heating; our sequence homes *before* for safety. See [`gcode-sequences.md`](gcode-sequences.md) for a full line-by-line comparison of OEM vs PrusaSlicer sequences.
+> **Note:** `G200` is a **proprietary Sindoh command** that triggers a built-in nozzle cleaning/wiping routine. PrusaSlicer cannot replicate it. This configuration replaces it with a standard front-edge prime line after homing. See [`gcode-sequences.md`](gcode-sequences.md) for a full line-by-line comparison of OEM vs PrusaSlicer sequences.
 
 ### 2.5 End G-code
 
@@ -549,7 +563,7 @@ All values matched to OEM 3DWOX Desktop 1.4.2213.1 output:
 
 ### Proprietary G-code: `G200` (Nozzle Cleaning)
 
-The OEM 3DWOX Desktop slicer issues a `G200` command during startup. This is a **proprietary Sindoh command** that triggers an automatic nozzle cleaning/wiping routine using hardware built into the printer. **PrusaSlicer cannot replicate this command.** The workaround is the `G1 E10 F200` prime line in the Start G-code. The quality difference is minor for most prints.
+The OEM 3DWOX Desktop slicer issues a `G200` command during startup. This is a **proprietary Sindoh command** that triggers an automatic nozzle cleaning/wiping routine using hardware built into the printer. **PrusaSlicer cannot replicate this command.** The workaround here is a standard front-edge prime line in the Start G-code (`G1 X... E40`) after heating and homing. The quality difference is minor for most prints.
 
 ### Proprietary G-code: `M532` (Progress Tracking)
 
@@ -575,7 +589,7 @@ PrusaSlicer's **Arachne** variable-width generator generally produces better res
 
 ### Homing Sequence
 
-The OEM slicer homes **after** heating bed and nozzle. This guide homes **before** heating, which prevents the nozzle from dragging across the bed while cold. Both produce the same print quality; the pre-heat home is considered safer.
+This guide now homes **after** heating bed and nozzle, matching the final validated 3DWOX1 startup sequence more closely and ensuring the prime line runs immediately after homing.
 
 ### Print Bed Positioning
 

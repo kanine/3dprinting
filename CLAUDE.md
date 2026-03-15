@@ -44,6 +44,7 @@ This is a **PrusaSlicer configuration knowledge base** for specific 3D printers.
 
 - **Bowden extruder**: requires 6 mm retraction (OEM default); PrusaSlicer profile currently uses 2 mm (must be corrected)
 - **Proprietary gcode**: `G200` (nozzle cleaning) and `M532` (layer progress) cannot be replicated in PrusaSlicer
+- **Final startup approach**: uses OEM-required header metadata, post-heat homing, and a front-edge prime line instead of `G200`
 - **OEM defaults**: 0.2 mm layer height, 15% infill, 4-layer raft bed adhesion, 40 mm/s print speed, 130 mm/s travel
 - **Critical PrusaSlicer deviations to correct**: layer height (0.3→0.2 mm), perimeters (3→2), retraction (2→6 mm), bed adhesion (skirt→raft)
 - The full OEM vs PrusaSlicer settings comparison and start/end gcode are documented in `.github/copilot-instructions.md`

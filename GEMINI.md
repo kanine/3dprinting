@@ -31,7 +31,7 @@ The project focuses on reverse-engineering proprietary/OEM slicer settings (like
 ### Key Configuration Insights
 - **Bowden Extruder:** Requires high retraction (**6.0 mm** at 30 mm/s). PrusaSlicer defaults often use 2 mm (direct drive), which causes stringing.
 - **Proprietary G-code:**
-  - `G200`: OEM nozzle cleaning routine (cannot be replicated, replaced with `G1 E10` prime line).
+  - `G200`: OEM nozzle cleaning routine (cannot be replicated, replaced with a front-edge prime line after homing).
   - `M532`: Layer progress tracking (not supported by PrusaSlicer, purely cosmetic).
 - **Bed Adhesion:** OEM defaults to a **4-layer Raft**.
 - **Speeds:** 40 mm/s print speed, 130 mm/s travel. OEM does not slow down for external perimeters.
@@ -58,5 +58,5 @@ The project focuses on reverse-engineering proprietary/OEM slicer settings (like
 
 ## Reference Material
 
-- **Start G-code:** Uses homing followed by a manual prime line to replace the proprietary `G200` command.
+- **Start G-code:** Uses the finalized 3DWOX1 startup header, heat-wait sequence, homing, and a front-edge prime line to replace the proprietary `G200` command.
 - **End G-code:** Explicitly shuts off heaters and moves the head to `Y200` for easy print removal.
