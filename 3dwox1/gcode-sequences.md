@@ -25,13 +25,24 @@ G0 F9000 Z3.00  ; Lift nozzle 3 mm
 ### PrusaSlicer (this config)
 
 ```gcode
-G28                                    ; Home all axes
-G1 Z5 F5000                            ; Lift nozzle 5 mm
-M190 S[first_layer_bed_temperature]    ; Wait for bed temp
-M109 S[first_layer_temperature]        ; Wait for extruder temp
-G92 E0                                 ; Reset extruder position to 0
-G1 E10 F200                            ; Prime the nozzle
+G90                                     ; absolute coordinates
+M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
+M190 S[first_layer_bed_temperature]     ; wait for bed temp
+M104 S[first_layer_temperature]         ; set nozzle temp (no wait)
+M109 S[first_layer_temperature]         ; wait for nozzle temp
+G28                                     ; home all axes
+G1 Z0.28 F5000                          ; lower to purge line height
+G92 E0                                  ; reset extruder
+G1 X10 Y3 F2400                         ; move to front-left of bed
+G1 X190 E15 F500                        ; purge line across front of bed
+G92 E0                                  ; reset extruder
+G1 E-1 F1800                            ; retract to prevent ooze
+G1 X192 F4000                           ; wipe away from purge line
+M82                                     ; restore absolute extruder mode
+M117                                    ; clear LCD message
 ```
+
+> Purge line approach adapted from the Anycubic Kobra 2 Plus profile, modified for the 3DWOX 1's 210 mm bed width, Bowden extruder retraction, and absolute E mode.
 
 ---
 

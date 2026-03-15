@@ -143,26 +143,44 @@ Navigate to *Printer Settings → Custom G-code → Start G-code*.
 **Delete** the default content and paste:
 
 ```gcode
-G28 ; Home all axes
-G1 Z5 F5000 ; Lift nozzle
-M190 S[first_layer_bed_temperature] ; Wait for bed temp
-M109 S[first_layer_temperature] ; Wait for extruder temp
-G92 E0 ; Reset extruder
-G1 E10 F200 ; Prime the nozzle
+G90                                     ; absolute coordinates
+M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
+M190 S[first_layer_bed_temperature]     ; wait for bed temp
+M104 S[first_layer_temperature]         ; set nozzle temp (no wait)
+M109 S[first_layer_temperature]         ; wait for nozzle temp
+G28                                     ; home all axes
+G1 Z0.28 F5000                          ; lower to purge line height
+G92 E0                                  ; reset extruder
+G1 X10 Y3 F2400                         ; move to front-left of bed
+G1 X190 E15 F500                        ; purge line across front of bed
+G92 E0                                  ; reset extruder
+G1 E-1 F1800                            ; retract to prevent ooze
+G1 X192 F4000                           ; wipe away from purge line
+M82                                     ; restore absolute extruder mode
+M117                                    ; clear LCD message
 ```
 
 **Line-by-line explanation:**
 
 | Line | Command | Purpose |
 |------|---------|---------|
-| 1 | `G28` | Homes all axes (X, Y, Z) to their endstops |
-| 2 | `G1 Z5 F5000` | Raises nozzle 5 mm before heating to prevent bed contact |
-| 3 | `M190 S[first_layer_bed_temperature]` | Heats bed and **waits** until target is reached; uses PrusaSlicer variable |
-| 4 | `M109 S[first_layer_temperature]` | Heats nozzle and **waits** until target is reached; uses PrusaSlicer variable |
-| 5 | `G92 E0` | Resets extruder position counter to zero |
-| 6 | `G1 E10 F200` | Extrudes 10 mm of filament at slow speed to prime the nozzle |
+| 1 | `G90` | Ensures absolute coordinate mode |
+| 2 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats |
+| 3 | `M190 S[...]` | Waits for bed to reach target temperature |
+| 4 | `M104 S[...]` | Starts nozzle heating without waiting |
+| 5 | `M109 S[...]` | Waits for nozzle to reach target temperature |
+| 6 | `G28` | Homes all axes (X, Y, Z) to endstops |
+| 7 | `G1 Z0.28 F5000` | Lowers nozzle to purge line height (just above first layer) |
+| 8 | `G92 E0` | Resets extruder position to zero |
+| 9 | `G1 X10 Y3 F2400` | Moves to front-left of bed, clear of edges |
+| 10 | `G1 X190 E15 F500` | Draws 180 mm purge line across the front of the bed, extruding 15 mm of filament |
+| 11 | `G92 E0` | Resets extruder position to zero again |
+| 12 | `G1 E-1 F1800` | Retracts 1 mm to prevent ooze during travel to print start |
+| 13 | `G1 X192 F4000` | Wipes nozzle away from the purge line quickly |
+| 14 | `M82` | Restores absolute extruder mode (required — PrusaSlicer generates absolute E gcode) |
+| 15 | `M117` | Clears any message from the LCD display |
 
-**OEM start sequence (for reference):**
+**OEM start sequence (for reference — see [`gcode-sequences.md`](gcode-sequences.md) for full comparison):**
 
 ```gcode
 M140 S60       ; Heat bed (no wait)
