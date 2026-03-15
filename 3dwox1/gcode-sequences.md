@@ -25,7 +25,10 @@ G0 F9000 Z3.00  ; Lift nozzle 3 mm
 ### PrusaSlicer (this config)
 
 ```gcode
-G90                                     ; absolute coordinates
+;Filament_Material : {filament_type[0]}     ; required by 3DWOX cartridge validator
+;MATERIAL: [{filament_type[0]}]             ; required by 3DWOX cartridge validator
+;MATERIAL_CARTRIDGE_0: [{filament_type[0]}] ; required by 3DWOX cartridge validator
+G90                                         ; absolute coordinates
 M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
 M190 S[first_layer_bed_temperature]     ; wait for bed temp
 M104 S[first_layer_temperature]         ; set nozzle temp (no wait)

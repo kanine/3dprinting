@@ -145,6 +145,9 @@ Navigate to *Printer Settings → Custom G-code → Start G-code*.
 **Delete** the default content and paste:
 
 ```gcode
+;Filament_Material : {filament_type[0]}  ; required by 3DWOX cartridge validator
+;MATERIAL: [{filament_type[0]}]          ; required by 3DWOX cartridge validator
+;MATERIAL_CARTRIDGE_0: [{filament_type[0]}] ; required by 3DWOX cartridge validator
 G90                                     ; absolute coordinates
 M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
 M190 S[first_layer_bed_temperature]     ; wait for bed temp
@@ -166,7 +169,8 @@ M117                                    ; clear LCD message
 
 | Line | Command | Purpose |
 |------|---------|---------|
-| 1 | `G90` | Ensures absolute coordinate mode |
+| 1–3 | `;Filament_Material` / `;MATERIAL` / `;MATERIAL_CARTRIDGE_0` | Comment headers required by the 3DWOX firmware to validate the loaded cartridge against the gcode. Uses `{filament_type[0]}` PrusaSlicer variable — outputs `PLA` for PLA/PLA+, `PETG` for PETG, etc. Without these the printer errors with a cartridge mismatch. |
+| 4 | `G90` | Ensures absolute coordinate mode |
 | 2 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats |
 | 3 | `M190 S[...]` | Waits for bed to reach target temperature |
 | 4 | `M104 S[...]` | Starts nozzle heating without waiting |
