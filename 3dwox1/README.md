@@ -126,11 +126,11 @@ Navigate to *Printer Settings → Extruder 1*:
 | Setting | Value | Notes |
 |---------|-------|-------|
 | **Nozzle diameter** | `0.4` mm | |
-| **Retraction → Length** | `6` mm | **Critical** — Bowden tube requires long retraction; PrusaSlicer defaults to 2 mm (wrong for this printer) |
-| **Retraction → Lift Z** | `0` mm | OEM does not use Z-hop |
-| **Retraction → Speed** | `30` mm/s | OEM uses 30 mm/s; PrusaSlicer defaults to 40 mm/s |
+| **Travel lift → Lift height** | `0` mm | OEM does not use Z-hop |
+| **Retraction → Retraction length** | `6` mm | **Critical** — Bowden tube requires long retraction; PrusaSlicer defaults to 2 mm (wrong for this printer) |
+| **Retraction → Retraction speed** | `30` mm/s | OEM uses 30 mm/s; PrusaSlicer defaults to 40 mm/s |
 | **Retraction → Deretraction speed** | `0` (same as retraction speed) | |
-| **Retraction → Minimum travel after retraction** | `1.5` mm | Matches OEM |
+| **Retraction → Minimum travel after retraction** | `1.5` mm | PrusaSlicer defaults to 2 mm — change to 1.5 |
 | **Retraction → Retract on layer change** | Unchecked | |
 | **Retraction → Wipe while retracting** | Unchecked | |
 
