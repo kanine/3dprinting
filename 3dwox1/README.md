@@ -279,9 +279,14 @@ Navigate to *Print Settings → Infill*:
 | **Top fill pattern** | `Monotonic` | *Infill → Top fill pattern* |
 | **Bottom fill pattern** | `Monotonic` | *Infill → Bottom fill pattern* |
 | **Fill angle** | `45`° | *Infill → Advanced → Fill angle* |
-| **Infill/perimeters overlap** | `15`% | *Infill → Advanced → Infill/perimeters overlap* |
 
 > The OEM uses 15% infill with a grid-like pattern at 45°. PrusaSlicer defaults to 11% with a Stars pattern — correct both. **Grid** is the closest match to the OEM automatic pattern.
+
+Also set in the top-level **Advanced** tab (left sidebar):
+
+| Setting | Value | Menu Path |
+|---------|-------|-----------|
+| **Infill/perimeters overlap** | `15`% | *Advanced → Infill/perimeters overlap* |
 
 ### 3.3 Speed
 
