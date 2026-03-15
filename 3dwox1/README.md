@@ -205,22 +205,28 @@ Navigate to *Printer Settings → Custom G-code → End G-code*.
 **Delete** the default content and paste:
 
 ```gcode
-M104 S0 ; Turn off nozzle heater
-M140 S0 ; Turn off bed heater
-G1 X0 Y200 F3000 ; Park print head at front-left
-M84 ; Disable stepper motors
+{if max_layer_z < max_print_height}G1 Z{z_offset+min(max_layer_z+2, max_print_height)} F600 ; Lower bed slightly away from nozzle{endif}
+G1 X5 Y{print_bed_max[1]*0.95} F{travel_speed*60} ; Move head to front of bed
+{if max_layer_z < max_print_height-10}G1 Z{z_offset+min(max_layer_z+70, max_print_height-10)} F600 ; Lower bed to present print{endif}
+{if max_layer_z < max_print_height*0.6}G1 Z{max_print_height*0.6} F600 ; Lower bed to minimum access height{endif}
+M140 S0 ; turn off heatbed
+M104 S0 ; turn off nozzle
+M84 ; disable motors
 ```
 
 **Line-by-line explanation:**
 
 | Line | Command | Purpose |
 |------|---------|---------|
-| 1 | `M104 S0` | Sets nozzle heater target to 0 °C (off) |
-| 2 | `M140 S0` | Sets bed heater target to 0 °C (off) |
-| 3 | `G1 X0 Y200 F3000` | Parks head at front-left corner for easy print removal |
-| 4 | `M84` | Releases all stepper motors so axes can be moved freely |
+| 1 | `G1 Z{...+2}` | Drops bed 2 mm immediately — prevents nozzle dragging across print during XY move |
+| 2 | `G1 X5 Y{95%}` | Parks head at front of bed for easy print access; uses slicer variables for bed dimensions |
+| 3 | `G1 Z{...+70}` | Drops bed a further 70 mm (capped at max height − 10) to fully clear the nozzle |
+| 4 | `G1 Z{60%}` | For short prints only — ensures bed drops to at least 60% of max height regardless |
+| 5 | `M140 S0` | Turns off bed heater |
+| 6 | `M104 S0` | Turns off nozzle heater |
+| 7 | `M84` | Releases all stepper motors |
 
-> The OEM slicer uses only `M2` (legacy program-end command). Our sequence is more explicit and reliable.
+> **3DWOX 1 note:** On this printer the **bed moves down** when Z increases — so all Z moves here lower the bed away from the nozzle, presenting the print for removal. The OEM slicer uses only `M2` (legacy halt) with no explicit shutdown or parking.
 
 ---
 

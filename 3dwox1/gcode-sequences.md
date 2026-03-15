@@ -118,11 +118,16 @@ M2    ; Program end (legacy halt)
 ### PrusaSlicer (this config)
 
 ```gcode
-M104 S0          ; Turn off nozzle heater
-M140 S0          ; Turn off bed heater
-G1 X0 Y200 F3000 ; Park print head at front-left
-M84              ; Disable stepper motors
+{if max_layer_z < max_print_height}G1 Z{z_offset+min(max_layer_z+2, max_print_height)} F600 ; Lower bed slightly away from nozzle{endif}
+G1 X5 Y{print_bed_max[1]*0.95} F{travel_speed*60} ; Move head to front of bed
+{if max_layer_z < max_print_height-10}G1 Z{z_offset+min(max_layer_z+70, max_print_height-10)} F600 ; Lower bed to present print{endif}
+{if max_layer_z < max_print_height*0.6}G1 Z{max_print_height*0.6} F600 ; Lower bed to minimum access height{endif}
+M140 S0 ; turn off heatbed
+M104 S0 ; turn off nozzle
+M84 ; disable motors
 ```
+
+> Adapted from Anycubic Kobra 2 Plus end gcode. On the 3DWOX 1 the **bed moves down** when Z increases, so all Z moves lower the bed to present the print — identical gcode, opposite physical motion to the Kobra.
 
 ---
 
@@ -130,9 +135,11 @@ M84              ; Disable stepper motors
 
 | OEM | PrusaSlicer | Why different |
 |-----|-------------|---------------|
-| `M2` — legacy "program end" command, halts execution | `M104 S0` + `M140 S0` | `M2` does stop the print, but it does not explicitly turn off heaters — it relies on the printer firmware to handle shutdown. Our sequence explicitly turns both heaters off, which is safer and more reliable across firmware versions. |
-| — | `G1 X0 Y200 F3000` | Parks the print head at the front-left corner. This moves the nozzle away from the printed object (preventing heat from warping the top surface) and gives easy access for print removal. The OEM does not park — the head stays wherever the last layer ended. |
-| — | `M84` | Releases all stepper motors so the axes can be moved freely by hand. Useful for manually moving the head aside or removing the print. The OEM `M2` halt may or may not release motors depending on firmware. |
+| `M2` — legacy "program end" command, halts execution | Conditional Z moves + explicit heater shutdown | `M2` does not explicitly turn off heaters or present the print. Our sequence is fully explicit. |
+| — | `G1 Z{...+2}` then `G1 Z{...+70}` | Lowers the bed in two steps — small initial drop to clear the nozzle before XY travel, then a larger drop to fully present the print. On the 3DWOX 1 the bed moves down when Z increases. Conditional logic ensures the bed never tries to exceed `max_print_height`. |
+| — | `G1 X5 Y{95% of bed}` | Parks head at the front of the bed using slicer variables — works correctly regardless of bed size. The OEM does not park the head. |
+| — | `M140 S0` + `M104 S0` | Explicitly turns off both heaters. Safer and more reliable than relying on `M2` firmware behaviour. |
+| — | `M84` | Releases all stepper motors. The OEM `M2` halt may or may not release motors depending on firmware. |
 
 ---
 
