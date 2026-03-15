@@ -82,7 +82,7 @@ The most critical deviations from PrusaSlicer defaults — fix these first:
 | 9 | First layer speed | 20 mm/s | **10 mm/s** |
 | 10 | External perimeter speed | 30% (≈12 mm/s) | **40 mm/s** |
 | 11 | Fan speed | 35–100% | **50% min/max** |
-| 12 | Bed adhesion | Skirt | **Raft (4 layers)** |
+| 12 | Bed adhesion | Skirt | **Skirt (leave at default; add raft per-model if needed)** |
 
 ---
 
@@ -302,8 +302,12 @@ Navigate to *Print Settings → Speed*:
 | **Infill** | `40` mm/s | *Speed → Speed for print moves → Infill* |
 | **Solid infill** | `40` mm/s | *Speed → Speed for print moves → Solid infill* |
 | **Top solid infill** | `40` mm/s | *Speed → Speed for print moves → Top solid infill* |
-| **Gap fill** | `20` mm/s | *Speed → Speed for print moves → Gap fill* |
+| **Support material** | `60` mm/s | Leave at default (support disabled by default) |
+| **Support material interface** | `100`% | Leave at default |
 | **Bridges** | `40` mm/s | *Speed → Speed for print moves → Bridges* |
+| **Over bridges** | `0` mm/s | Leave at default (0 = same as bridges) |
+| **Gap fill** | `20` mm/s | *Speed → Speed for print moves → Gap fill* |
+| **Ironing** | `15` mm/s | Leave at default (ironing disabled by default) |
 
 > **OEM behaviour:** The 3DWOX Desktop uses 40 mm/s for all print moves. Crucially, it does **not** slow down external perimeters — the PrusaSlicer default of 30% for external perimeters (≈12 mm/s) is wrong for this printer. Set external perimeters to 40 mm/s.
 
@@ -312,8 +316,9 @@ Navigate to *Print Settings → Speed*:
 | Setting | Value | Menu Path |
 |---------|-------|-----------|
 | **Travel** | `130` mm/s | *Speed → Speed for non-print moves → Travel* |
-| **First layer speed** | `10` mm/s | *Speed → Speed for print moves → First layer speed* |
-| **First layer speed over raft** | `10` mm/s | *Speed → Speed for print moves → First layer speed over raft* |
+| **First layer speed** | `10` mm/s | *Speed → Modifiers → First layer speed* |
+| **First layer solid infill speed** | `0` mm/s | *Speed → Modifiers → First layer solid infill speed* (0 = same as solid infill) |
+| **Speed of object first layer over raft interface** | `30` mm/s | *Speed → Modifiers → Speed of object first layer over raft interface* (leave at default) |
 
 > The OEM uses 130 mm/s travel (PrusaSlicer defaults to 100 mm/s) and 10 mm/s first layer (PrusaSlicer defaults to 20 mm/s). Both matter for matching OEM output quality.
 
@@ -336,35 +341,24 @@ Navigate to *Print Settings → Support material*:
 
 > Enable as needed per model. The OEM calibration cube gcode uses no support.
 
-#### Raft (Bed Adhesion)
+#### Bed Adhesion (Skirt — default)
 
-The OEM slicer defaults to **Raft** adhesion. To match:
+Leave raft disabled and use a skirt. Configure under *Print Settings → Skirt and brim*:
 
 | Setting | Value | Menu Path |
 |---------|-------|-----------|
-| **Raft layers** | `4` | *Support material → Raft → Raft layers* |
-| **Raft contact distance** | `0.25` mm | *Support material → Raft → Raft contact distance* |
-| **Raft expansion** | `2` mm | *Support material → Raft → Raft expansion* |
-| **First layer density** | `90`% | *Support material → Raft → First layer density* |
-| **First layer expansion** | `3` mm | *Support material → Raft → First layer expansion* |
+| **Raft layers** | `0` | *Support material → Raft layers* |
+| **Loops (minimum)** | `1` | *Skirt and brim → Loops (minimum)* |
+| **Distance from object** | `6` mm | *Skirt and brim → Distance from brim/object* |
+| **Skirt height** | `1` layer | *Skirt and brim → Skirt height* |
 
-The OEM raft structure is:
-
-| Raft Layer | Thickness | Line Width | Speed |
-|------------|-----------|------------|-------|
-| Base (1 layer) | 0.300 mm | 1.0 mm | 10 mm/s |
-| Interface (1 layer) | 0.270 mm | 0.4 mm | 10 mm/s |
-| Surface (2 layers) | 0.200 mm | 0.4 mm | 10 mm/s |
-
-> **Raft vs Skirt:** The OEM defaults to raft because the stock 3DWOX bed surface benefits from the extra adhesion area. Test without raft first — if adhesion is good, use a **Skirt** instead (saves material and time). If you experience adhesion failures, especially for larger prints or non-PLA filaments, switch back to Raft.
->
-> To use a Skirt instead: set **Raft layers** to `0`, then configure *Print Settings → Skirt and brim*: **Loops** = `1`, **Distance from object** = `6` mm, **Skirt height** = `1` layer.
+> **If you need a raft** (large prints, first-layer adhesion issues, non-PLA filament): set **Raft layers** to `4`. The OEM slicer defaults to raft with: contact distance 0.25 mm, expansion 2 mm, base layer 0.3 mm / 1.0 mm line width / 10 mm/s.
 
 ---
 
 ## Step 4 — Filament Settings (PLA)
 
-Navigate to the **Filament Settings** tab (spool icon). Name this profile **`3DWOX 1 PLA`**.
+Navigate to the **Filament Settings** tab (spool icon). Name this profile **`3DWox 1 PLA+`**.
 
 ### 4.1 Temperature
 
@@ -372,10 +366,12 @@ Navigate to *Filament Settings → Filament*:
 
 | Setting | Value | Menu Path |
 |---------|-------|-----------|
-| **Nozzle — First layer** | `200` °C | *Filament → Temperature → Nozzle → First layer* |
-| **Nozzle — Other layers** | `200` °C | *Filament → Temperature → Nozzle → Other layers* |
+| **Nozzle — First layer** | `220` °C | *Filament → Temperature → Nozzle → First layer* |
+| **Nozzle — Other layers** | `215` °C | *Filament → Temperature → Nozzle → Other layers* |
 | **Bed — First layer** | `60` °C | *Filament → Temperature → Bed → First layer* |
 | **Bed — Other layers** | `60` °C | *Filament → Temperature → Bed → Other layers* |
+
+> PLA+ runs hotter than standard PLA for better layer adhesion. If using standard PLA, use 200 °C for both nozzle values.
 
 ### 4.2 Cooling
 
@@ -424,7 +420,7 @@ Retraction is controlled by Printer Settings (section 2.3). Leave filament overr
 
 1. **Printer profile:** In the Printer Settings tab, click the save icon (💾) next to the profile dropdown. Name it **`3DWOX 1`**
 2. **Print profile:** In the Print Settings tab, click the save icon. Name it **`3DWOX 1`**
-3. **Filament profile:** In the Filament Settings tab, click the save icon. Name it **`3DWOX 1 PLA`**
+3. **Filament profile:** In the Filament Settings tab, click the save icon. Name it **`3DWox 1 PLA+`**
 
 To export a config bundle for backup or sharing:
 
@@ -442,17 +438,16 @@ Print a 10 × 10 × 10 mm calibration cube to verify your configuration:
 3. **Slice** with the profiles you just configured
 4. **Compare** the estimated print stats in the preview panel
 
-### Expected Output (with Raft enabled)
+### Expected Output (no raft)
 
 | Aspect | Expected Value |
 |--------|---------------|
 | **Total model layers** | 50 (10 mm ÷ 0.2 mm) |
-| **Raft layers** | 4 |
-| **Total layers** | 54 |
+| **Raft layers** | 0 |
 | **Perimeters per layer** | 2 |
 | **Fill pattern** | Grid at 45° |
-| **Estimated print time** | ~8 min |
-| **Estimated filament** | ~286 mm / ~0.9 g |
+| **Estimated print time** | ~7 min |
+| **Estimated filament** | ~250 mm / ~0.8 g |
 
 > Compare against the reference OEM gcode at `gcode/1cm Cubed  - 3DWOX Desktop.gcode` for detailed gcode-level comparison.
 
@@ -495,9 +490,7 @@ All values matched to OEM 3DWOX Desktop 1.4.2213.1 output:
 | Top solid infill speed | 40 mm/s |
 | First layer speed | 10 mm/s |
 | Travel speed | 130 mm/s |
-| Raft layers | 4 |
-| Raft contact distance | 0.25 mm |
-| Raft expansion | 2 mm |
+| Raft layers | 0 (skirt; add raft per-model if needed) |
 | Infill/perimeters overlap | 15% |
 
 ### Filament Settings (PLA)
@@ -505,7 +498,8 @@ All values matched to OEM 3DWOX Desktop 1.4.2213.1 output:
 | Setting | Value |
 |---------|-------|
 | Diameter | 1.75 mm |
-| Nozzle temp | 200 °C |
+| Nozzle temp (first layer) | 220 °C |
+| Nozzle temp (other layers) | 215 °C |
 | Bed temp | 60 °C |
 | Min fan speed | 50% |
 | Max fan speed | 50% |
