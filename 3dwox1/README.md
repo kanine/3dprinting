@@ -520,3 +520,11 @@ The OEM slicer positions prints slightly off-center at approximately X:105, Y:10
 ### Raft vs Skirt
 
 The OEM slicer defaults to **Raft** bed adhesion (4 extra layers printed under your model for adhesion). This uses extra filament and time but provides reliable adhesion on the stock 3DWOX build surface. Test your prints with just a **Skirt** first — if adhesion is good, you'll save material and time. Switch back to Raft if you experience adhesion issues, especially with larger prints or non-PLA filaments.
+
+### Putting in Open Filament Mode
+
+From reddit thread: https://www.reddit.com/r/3Dprinting/comments/ze71fn/comment/mqq7wr2/
+
+Click over to Settings, then XYZ, then click XYZ at the top 3 times, then the PLA material title at the bottom left of the screen once. Do those 4 presses quickly and you can unlock Open Material. If you don't get it the first time, try the 3x XYZ 1x PLA again, just do it quicker.
+
+Once set the Open Filament Setting should now be availble on the 4th settings window on the control panel.
