@@ -140,6 +140,8 @@ Navigate to *Printer Settings → Extruder 1*:
 
 Navigate to *Printer Settings → Custom G-code → Start G-code*.
 
+> **Important:** Also uncheck **Emit temperature commands automatically** (found just below the Start G-code box). Since we handle temperatures manually in the start gcode, leaving this enabled causes duplicate temperature commands.
+
 **Delete** the default content and paste:
 
 ```gcode
