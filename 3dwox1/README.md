@@ -105,8 +105,8 @@ Navigate to the **Printer Settings** tab (wrench icon).
 
 | Setting | Value | Menu Path |
 |---------|-------|-----------|
-| **Bed shape** | Rectangular 200 × 200 mm *(or 210 × 200 mm for Mimaki)* | *Printer Settings → General → Bed shape* |
-| **Max print height** | `185` mm *(or `195` mm for Mimaki)* | *Printer Settings → General → Max print height* |
+| **Bed shape** | Rectangular 200 × 200 mm | *Printer Settings → General → Bed shape* |
+| **Max print height** | `185` mm | *Printer Settings → General → Max print height* |
 | **G-code flavor** | `RepRap/Sprinter` | *Printer Settings → General → G-code flavor* |
 | **Extruders** | `1` | *Printer Settings → General → Extruders* |
 | **Supports remaining times** | Unchecked | *Printer Settings → General* |
@@ -115,7 +115,7 @@ Navigate to the **Printer Settings** tab (wrench icon).
 
 1. Click the **Set** button next to *Bed shape*
 2. Select **Rectangular**
-3. Set **Size X** = `200`, **Size Y** = `200` *(210 × 200 for Mimaki)*
+3. Set **Size X** = `200`, **Size Y** = `200`
 4. Set **Origin X** = `0`, **Origin Y** = `0`
 5. Click **OK**
 
@@ -148,22 +148,18 @@ Navigate to *Printer Settings → Custom G-code → Start G-code*.
 ;Filament_Material : {filament_type[0]}     ; required by 3DWOX cartridge validator
 ;MATERIAL: {filament_type[0]}              ; required by 3DWOX cartridge validator
 ;MATERIAL_CARTRIDGE_0: {filament_type[0]}  ; required by 3DWOX cartridge validator
-G90                                     ; absolute coordinates
-M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
-M190 S[first_layer_bed_temperature]     ; wait for bed temp
-M104 S[first_layer_temperature]         ; set nozzle temp (no wait)
-M109 S[first_layer_temperature]         ; wait for nozzle temp
-G28                                     ; home all axes
-G1 Z0.28 F5000                          ; lower to purge line height
-G92 E0                                  ; reset extruder
-G1 X10 Y3 F2400                         ; move to front-left of bed
-G1 X190 E15 F500                        ; purge line across front of bed
-G92 E0                                  ; reset extruder
-G1 E-1 F1800                            ; retract to prevent ooze
-G1 X192 F4000                           ; wipe away from purge line
-M82                                     ; restore absolute extruder mode
-M117                                    ; clear LCD message
+G90                                        ; absolute coordinates
+M140 S[first_layer_bed_temperature]        ; set bed temp (no wait)
+M190 S[first_layer_bed_temperature]        ; wait for bed temp
+M104 S[first_layer_temperature]            ; set nozzle temp (no wait)
+M109 S[first_layer_temperature]            ; wait for nozzle temp
+G28                                        ; home all axes
+G1 Z2 F5000                                ; lift bed to safe height
+M82                                        ; absolute extruder mode
+M117                                       ; clear LCD message
 ```
+
+> The skirt (configured in Print Settings) primes the nozzle around the model — a separate purge line in the start gcode is not needed.
 
 **Line-by-line explanation:**
 
@@ -171,20 +167,14 @@ M117                                    ; clear LCD message
 |------|---------|---------|
 | 1–3 | `;Filament_Material` / `;MATERIAL` / `;MATERIAL_CARTRIDGE_0` | Comment headers required by the 3DWOX firmware to validate the loaded cartridge against the gcode. Uses `{filament_type[0]}` PrusaSlicer variable — outputs `PLA` for PLA/PLA+, `PETG` for PETG, etc. Without these the printer errors with a cartridge mismatch. |
 | 4 | `G90` | Ensures absolute coordinate mode |
-| 2 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats |
-| 3 | `M190 S[...]` | Waits for bed to reach target temperature |
-| 4 | `M104 S[...]` | Starts nozzle heating without waiting |
-| 5 | `M109 S[...]` | Waits for nozzle to reach target temperature |
-| 6 | `G28` | Homes all axes (X, Y, Z) to endstops |
-| 7 | `G1 Z0.28 F5000` | Lowers nozzle to purge line height (just above first layer) |
-| 8 | `G92 E0` | Resets extruder position to zero |
-| 9 | `G1 X10 Y3 F2400` | Moves to front-left of bed, clear of edges |
-| 10 | `G1 X190 E15 F500` | Draws 180 mm purge line across the front of the bed, extruding 15 mm of filament |
-| 11 | `G92 E0` | Resets extruder position to zero again |
-| 12 | `G1 E-1 F1800` | Retracts 1 mm to prevent ooze during travel to print start |
-| 13 | `G1 X192 F4000` | Wipes nozzle away from the purge line quickly |
-| 14 | `M82` | Restores absolute extruder mode (required — PrusaSlicer generates absolute E gcode) |
-| 15 | `M117` | Clears any message from the LCD display |
+| 5 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats |
+| 6 | `M190 S[...]` | Waits for bed to reach target temperature |
+| 7 | `M104 S[...]` | Starts nozzle heating without waiting |
+| 8 | `M109 S[...]` | Waits for nozzle to reach target temperature |
+| 9 | `G28` | Homes all axes (X, Y, Z) to endstops |
+| 10 | `G1 Z2 F5000` | Lifts bed to a safe 2 mm clearance after homing |
+| 11 | `M82` | Ensures absolute extruder mode — required as PrusaSlicer generates absolute E gcode |
+| 12 | `M117` | Clears any message from the LCD display |
 
 **OEM start sequence (for reference — see [`gcode-sequences.md`](gcode-sequences.md) for full comparison):**
 

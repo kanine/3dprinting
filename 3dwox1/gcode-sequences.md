@@ -28,24 +28,18 @@ G0 F9000 Z3.00  ; Lift nozzle 3 mm
 ;Filament_Material : {filament_type[0]}     ; required by 3DWOX cartridge validator
 ;MATERIAL: {filament_type[0]}              ; required by 3DWOX cartridge validator
 ;MATERIAL_CARTRIDGE_0: {filament_type[0]}  ; required by 3DWOX cartridge validator
-G90                                         ; absolute coordinates
-M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
-M190 S[first_layer_bed_temperature]     ; wait for bed temp
-M104 S[first_layer_temperature]         ; set nozzle temp (no wait)
-M109 S[first_layer_temperature]         ; wait for nozzle temp
-G28                                     ; home all axes
-G1 Z0.28 F5000                          ; lower to purge line height
-G92 E0                                  ; reset extruder
-G1 X10 Y3 F2400                         ; move to front-left of bed
-G1 X190 E15 F500                        ; purge line across front of bed
-G92 E0                                  ; reset extruder
-G1 E-1 F1800                            ; retract to prevent ooze
-G1 X192 F4000                           ; wipe away from purge line
-M82                                     ; restore absolute extruder mode
-M117                                    ; clear LCD message
+G90                                        ; absolute coordinates
+M140 S[first_layer_bed_temperature]        ; set bed temp (no wait)
+M190 S[first_layer_bed_temperature]        ; wait for bed temp
+M104 S[first_layer_temperature]            ; set nozzle temp (no wait)
+M109 S[first_layer_temperature]            ; wait for nozzle temp
+G28                                        ; home all axes
+G1 Z2 F5000                                ; lift bed to safe height
+M82                                        ; absolute extruder mode
+M117                                       ; clear LCD message
 ```
 
-> Purge line approach adapted from the Anycubic Kobra 2 Plus profile, modified for the 3DWOX 1's 210 mm bed width, Bowden extruder retraction, and absolute E mode.
+> No purge line — the configured skirt primes the nozzle around the model before printing begins.
 
 ---
 
