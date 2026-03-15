@@ -241,13 +241,13 @@ Navigate to *Print Settings → Layers and perimeters*:
 
 > The OEM uses 0.8 mm top/bottom thickness. At 0.20 mm layer height: 0.8 ÷ 0.2 = 4 solid layers each. PrusaSlicer defaults to 3 — increase to 4.
 
-#### Quality
+#### Advanced
 
 | Setting | Value | Menu Path |
 |---------|-------|-----------|
-| **Perimeter generator** | `Arachne` | *Layers and perimeters → Quality → Perimeter generator* |
-| **Seam position** | `Aligned` | *Layers and perimeters → Quality → Seam position* |
-| **External perimeters first** | Unchecked | *Layers and perimeters → Quality* |
+| **Seam position** | `Aligned` | *Layers and perimeters → Advanced → Seam position* |
+| **External perimeters first** | Unchecked | *Layers and perimeters → Advanced → External perimeters first* |
+| **Perimeter generator** | `Arachne` | *Layers and perimeters → Advanced → Perimeter generator* |
 
 > **Arachne** is PrusaSlicer's variable-width perimeter generator and generally outperforms Classic for thin walls and complex geometry. Use **Classic** only if you need exact gcode matching with the OEM output.
 
