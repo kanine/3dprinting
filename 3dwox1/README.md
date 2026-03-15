@@ -145,18 +145,30 @@ Navigate to *Printer Settings → Custom G-code → Start G-code*.
 **Delete** the default content and paste:
 
 ```gcode
-;Filament_Material : {filament_type[0]}     ; required by 3DWOX cartridge validator
-;MATERIAL: {filament_type[0]}              ; required by 3DWOX cartridge validator
-;MATERIAL_CARTRIDGE_0: {filament_type[0]}  ; required by 3DWOX cartridge validator
-G90                                        ; absolute coordinates
-M140 S[first_layer_bed_temperature]        ; set bed temp (no wait)
-M190 S[first_layer_bed_temperature]        ; wait for bed temp
-M104 S[first_layer_temperature]            ; set nozzle temp (no wait)
-M109 S[first_layer_temperature]            ; wait for nozzle temp
-G28                                        ; home all axes
-G1 Z2 F5000                                ; lift bed to safe height
-M82                                        ; absolute extruder mode
-M117                                       ; clear LCD message
+;PRINTER_MODEL: 3DFF-222
+;CARTRIDGE_COUNT_TOTAL: 1
+;CARTRIDGE_USED_STATE: T
+;USEDNOZZLE: 1
+;Filament_Material : {filament_type[0]}
+;MATERIAL_CARTRIDGE_0: {filament_type[0]}
+;MATERIAL: {filament_type[0]}
+;TOTAL_RAFTLAYER: 0
+T0 ; select extruder
+G90 ; absolute coordinates
+M300 S440 P300 ; beep 1 - sequence started
+M117 Starting...
+M140 S[first_layer_bed_temperature] ; set bed temp (no wait)
+M190 S[first_layer_bed_temperature] ; wait for bed temp
+M104 S[first_layer_temperature] ; set nozzle temp (no wait)
+M109 S[first_layer_temperature] ; wait for nozzle temp
+M300 S440 P300 ; beep 2 - temps reached
+M117 Homing...
+G28 ; home all axes
+M300 S440 P300 ; beep 3 - homing complete
+G1 Z2 F5000 ; lift bed to safe height
+M82 ; absolute extruder mode
+M117 Printing...
+M300 S440 P300 ; beep 4 - ready to print
 ```
 
 > The skirt (configured in Print Settings) primes the nozzle around the model — a separate purge line in the start gcode is not needed.
@@ -165,16 +177,19 @@ M117                                       ; clear LCD message
 
 | Line | Command | Purpose |
 |------|---------|---------|
-| 1–3 | `;Filament_Material` / `;MATERIAL` / `;MATERIAL_CARTRIDGE_0` | Comment headers required by the 3DWOX firmware to validate the loaded cartridge against the gcode. Uses `{filament_type[0]}` PrusaSlicer variable — outputs `PLA` for PLA/PLA+, `PETG` for PETG, etc. Without these the printer errors with a cartridge mismatch. |
-| 4 | `G90` | Ensures absolute coordinate mode |
-| 5 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats |
-| 6 | `M190 S[...]` | Waits for bed to reach target temperature |
-| 7 | `M104 S[...]` | Starts nozzle heating without waiting |
-| 8 | `M109 S[...]` | Waits for nozzle to reach target temperature |
-| 9 | `G28` | Homes all axes (X, Y, Z) to endstops |
-| 10 | `G1 Z2 F5000` | Lifts bed to a safe 2 mm clearance after homing |
-| 11 | `M82` | Ensures absolute extruder mode — required as PrusaSlicer generates absolute E gcode |
-| 12 | `M117` | Clears any message from the LCD display |
+| 1–4 | `;PRINTER_MODEL` / `;CARTRIDGE_COUNT_TOTAL` / `;CARTRIDGE_USED_STATE` / `;USEDNOZZLE` | OEM header fields required by the 3DWOX firmware to validate the gcode before execution. Without these the printer may cancel the print immediately. |
+| 5–7 | `;Filament_Material` / `;MATERIAL_CARTRIDGE_0` / `;MATERIAL` | Cartridge material validation — uses `{filament_type[0]}` PrusaSlicer variable (outputs `PLA` for PLA/PLA+). Without these the printer errors with a cartridge mismatch. |
+| 8 | `;TOTAL_RAFTLAYER: [0]` | Tells the firmware no raft layers are used. |
+| 9 | `T0` | Selects extruder 0 (required by OEM sequence). |
+| 10 | `G90` | Ensures absolute coordinate mode. |
+| 11, 17, 20, 23 | `M300 S440 P300` | Audible beeps at key points — useful for diagnosing where in the sequence a print cancels. Beep 1 = gcode started, beep 2 = temps reached, beep 3 = homing done, beep 4 = ready to print. |
+| 12 | `M140 S[...]` | Starts bed heating without waiting — bed heats while nozzle heats. |
+| 13 | `M190 S[...]` | Waits for bed to reach target temperature. |
+| 14 | `M104 S[...]` | Starts nozzle heating without waiting. |
+| 15 | `M109 S[...]` | Waits for nozzle to reach target temperature. |
+| 19 | `G28` | Homes all axes (X, Y, Z) to endstops. |
+| 21 | `G1 Z2 F5000` | Lifts bed to a safe 2 mm clearance after homing. |
+| 22 | `M82` | Ensures absolute extruder mode — required as PrusaSlicer generates absolute E gcode. |
 
 **OEM start sequence (for reference — see [`gcode-sequences.md`](gcode-sequences.md) for full comparison):**
 
