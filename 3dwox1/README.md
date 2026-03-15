@@ -89,13 +89,11 @@ The most critical deviations from PrusaSlicer defaults — fix these first:
 ## Step 1 — Create a New Printer Profile
 
 1. Open PrusaSlicer
-2. Go to **Configuration → Configuration Wizard**
-3. On the **Other FFF** page, select nothing — we configure manually
-4. On the **Other SLA** page, select nothing
-5. Click through the remaining pages and click **Finish**
-6. In the **Printers** tab, open the printer dropdown and select **Add/Remove printers** at the bottom of the list
-7. This opens the Configuration Wizard — on the **Custom Printer** page, add a new printer, start from a generic **RepRap** preset, and name it **`3DWOX 1`** (or **`3DFF-222`** for the Mimaki variant)
-8. Click **Finish**
+2. Go to **Configuration → Configuration Wizard** (or open the **Printers** tab, click the dropdown, and choose **Add/Remove printers** — both open the same wizard)
+3. In the wizard's left sidebar, click **Custom Printer**
+4. Enable **Custom printer** and set the name to **`3DWOX 1`** (or **`3DFF-222`** for the Mimaki variant)
+5. Set **Flavour** to `RepRap (Marlin/Sprinter/Repetier)`
+6. Click through the remaining pages and click **Finish**
 
 ---
 
