@@ -93,7 +93,7 @@ The most critical deviations from PrusaSlicer defaults — fix these first:
 3. On the **Other FFF** page, select nothing — we configure manually
 4. On the **Other SLA** page, select nothing
 5. Click through the remaining pages and click **Finish**
-6. In the **Printer** dropdown (top centre), select **Add/Remove Presets → Add a Printer**
+6. In the **Printers** tab, click the **new preset** icon in the toolbar (blank page icon — *not* "Add physical printer", which is for network connections)
 7. Start from a generic **RepRap** or **FFF** preset
 8. Name the printer profile: **`3DWOX 1`** (or **`3DFF-222`** for the Mimaki variant)
 
