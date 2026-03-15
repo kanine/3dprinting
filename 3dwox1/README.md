@@ -178,7 +178,7 @@ G28             ; Home (AFTER heating)
 G0 F9000 Z3.00  ; Lift
 ```
 
-> **Note:** `G200` is a **proprietary Sindoh command** that triggers a built-in nozzle cleaning/wiping routine. PrusaSlicer cannot replicate it. The `G1 E10 F200` prime line is the best alternative. The OEM also homes *after* heating; our sequence homes *before* for safety.
+> **Note:** `G200` is a **proprietary Sindoh command** that triggers a built-in nozzle cleaning/wiping routine. PrusaSlicer cannot replicate it. The `G1 E10 F200` prime line is the best alternative. The OEM also homes *after* heating; our sequence homes *before* for safety. See [`gcode-sequences.md`](gcode-sequences.md) for a full line-by-line comparison of OEM vs PrusaSlicer sequences.
 
 ### 2.5 End G-code
 
