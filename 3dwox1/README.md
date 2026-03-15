@@ -92,7 +92,7 @@ The most critical deviations from PrusaSlicer defaults — fix these first:
 2. Go to **Configuration → Configuration Wizard** (or open the **Printers** tab, click the dropdown, and choose **Add/Remove printers** — both open the same wizard)
 3. In the wizard's left sidebar, click **Custom Printer**
 4. Enable **Custom printer** and set the name to **`3DWOX 1`** (or **`3DFF-222`** for the Mimaki variant)
-5. Set **Flavour** to `RepRap (Marlin/Sprinter/Repetier)`
+5. Set **Firmware type** to `RepRap/Sprinter`
 6. Click through the remaining pages and click **Finish**
 
 ---
@@ -107,7 +107,7 @@ Navigate to the **Printer Settings** tab (wrench icon).
 |---------|-------|-----------|
 | **Bed shape** | Rectangular 200 × 200 mm *(or 210 × 200 mm for Mimaki)* | *Printer Settings → General → Bed shape* |
 | **Max print height** | `185` mm *(or `195` mm for Mimaki)* | *Printer Settings → General → Max print height* |
-| **G-code flavor** | `RepRap (Marlin/Sprinter/Repetier)` | *Printer Settings → General → G-code flavor* |
+| **G-code flavor** | `RepRap/Sprinter` | *Printer Settings → General → G-code flavor* |
 | **Extruders** | `1` | *Printer Settings → General → Extruders* |
 | **Supports remaining times** | Unchecked | *Printer Settings → General* |
 
@@ -463,7 +463,7 @@ All values matched to OEM 3DWOX Desktop 1.4.2213.1 output:
 |---------|-------|
 | Bed size | 200 × 200 mm *(210 × 200 mm for Mimaki 3DFF-222)* |
 | Max height | 185 mm *(195 mm for Mimaki 3DFF-222)* |
-| G-code flavor | RepRap (Marlin/Sprinter/Repetier) |
+| G-code flavor | RepRap/Sprinter |
 | Nozzle diameter | 0.4 mm |
 | Retraction length | 6 mm |
 | Retraction speed | 30 mm/s |
