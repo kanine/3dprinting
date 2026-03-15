@@ -145,9 +145,9 @@ Navigate to *Printer Settings → Custom G-code → Start G-code*.
 **Delete** the default content and paste:
 
 ```gcode
-;Filament_Material : {filament_type[0]}  ; required by 3DWOX cartridge validator
-;MATERIAL: [{filament_type[0]}]          ; required by 3DWOX cartridge validator
-;MATERIAL_CARTRIDGE_0: [{filament_type[0]}] ; required by 3DWOX cartridge validator
+;Filament_Material : {filament_type[0]}     ; required by 3DWOX cartridge validator
+;MATERIAL: {filament_type[0]}              ; required by 3DWOX cartridge validator
+;MATERIAL_CARTRIDGE_0: {filament_type[0]}  ; required by 3DWOX cartridge validator
 G90                                     ; absolute coordinates
 M140 S[first_layer_bed_temperature]     ; set bed temp (no wait)
 M190 S[first_layer_bed_temperature]     ; wait for bed temp
